@@ -5,14 +5,14 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 
-let theBalls[];
+let theBalls = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
 }
 
 function draw() {
-  background(220);
+  background('black');
   moveBall();
   displayBall();
 }
@@ -35,20 +35,20 @@ function moveBall(){
     ball.y += ball.dy;
   
     //check bounce
-    if (ball.x + ball.diameter/2 >= width || ball.x + ball.diameter/2 <= 0){
-        ball.dx *= -1;
+    if (ball.x + ball.diameter/2 >= width || ball.x - ball.diameter/2 <= 0){
+      ball.dx *= -1;
     }
   
-    if (ball.y + ball.diameter/2 >= height || ball.y + ball.diameter/2 <= 0){
+    if (ball.y + ball.diameter/2 >= height || ball.y - ball.diameter/2 <= 0){
       ball.dy *= -1;
     }
   }
 }
 
-function dispalyBall(){
+function displayBall(){
   for(let i = 0; i<theBalls.length; i++) {
     noStroke();
     fill(theBalls[i].theColor);
-    ellipse(theBalls[i].x, theBalls[i].y, theBalls[i].diameter, theBalls[i].diameter)
+    ellipse(theBalls[i].x, theBalls[i].y, theBalls[i].diameter, theBalls[i].diameter);
   }
 }
