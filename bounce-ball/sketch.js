@@ -7,7 +7,6 @@
 
 let theBalls[];
 
-
 function setup() {
   createCanvas(windowWidth, windowHeight);
 }
