@@ -55,7 +55,7 @@ function drawGrid(){
   for (let y=0; y<rows; y++){
     for (let x=0; x<cols; x++){
       strokeWeight(0.5);
-      // if (selectCell){
+      // if (selectCell){ only fill if x and y are equal to the saved position of selected cell
       //   fill(242, 239, 216);
       // }
       rect(x*cellWidth, y*cellHeight, cellWidth, cellHeight);
@@ -72,7 +72,7 @@ function drawGrid(){
   //draw border 
   strokeWeight(5);
   line(0, 0, myCanvas.width, 0); //top
-  line(myCanvas.width-1, myCanvas.width-1, 0, myCanvas.width-1); //bottom, why -1 needed?
+  line(myCanvas.width-1, myCanvas.width-1, 0, myCanvas.width-1); //bottom
   line(myCanvas.width-1, 0, myCanvas.width-1, myCanvas.width-1); //right
   line(0, 0, 0, myCanvas.width-1); //left
 
@@ -88,6 +88,8 @@ function mousePressed(){
   x = Math.floor(mouseX/cellWidth);
   y = Math.floor(mouseY/cellHeight);
 
+  // save position of selected cell
+  //only select if x y position in original grid is zero
   selectCell = true;
 
 }
