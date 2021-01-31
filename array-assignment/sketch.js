@@ -3,51 +3,37 @@
 // January 26, 2021
 //
 // Extra for Experts:
-// - describe what you did to take this project "above and beyond"
+// - 
 
 //Things to Do:
-//Outline selected numbers
 //Highlight row and box of selected number
 //Startscreen
 //Add music
-
-
-// let original = [[0, 0, 0, 2, 6, 0, 7, 0, 1],
-//                 [6, 8, 0, 0, 7, 0, 0, 9, 0],
-//                 [1, 9, 0, 0, 0, 4, 5, 0, 0],
-//                 [8, 2, 0, 1, 0, 0, 0, 4, 0],
-//                 [0, 0, 4, 6, 0, 2, 9, 0, 0],
-//                 [0, 5, 0, 0, 0, 3, 0, 2, 8],
-//                 [0, 0, 9, 3, 0, 0, 0, 7, 4],
-//                 [0, 4, 0, 0, 5, 0, 0, 3, 6],
-//                 [7, 0, 3, 0, 1, 8, 0, 0, 0]];
-
-// let answer = [[4, 3, 5, 2, 6, 9, 7, 8, 1],
-//               [6, 8, 2, 5, 7, 1, 4, 9, 3],
-//               [1, 9, 7, 8, 3, 4, 5, 6, 2],
-//               [8, 2, 6, 1, 9, 5, 3, 4, 7],
-//               [3, 7, 4, 6, 8, 2, 9, 1, 5],
-//               [9, 5, 1, 7, 4, 3, 6, 2, 8],
-//               [5, 1, 9, 3, 2, 6, 8, 7, 4],
-//               [2, 4, 8, 9, 5, 7, 1, 3, 6],
-//               [7, 6, 3, 4, 1, 8, 2, 5, 9]];
+//Number size ratio
+//Add completion sound when finished row/col or square
+//Add buttons for level reset and start screen
+//Re-organize keyPressed()
 
 let rows, cols, cellWidth, cellHeight;
-let num;
-let selectCell = false;
+let addNum = false;
+let highlightNum = false;
+let selectNum = "";
 let x, y;
-let myCanvas;
-let click, complete;
+let click, complete, error;
 let answer;
 let playerGrid;
 let original;
 let mistakes = 0;
+let sidePadding, topPadding, gridSize;
+let sideEdge, vertEdge, bottomEdge;
+let cellX, cellY;
 
 function preload(){
   click = loadSound("assets/click1.wav");
   complete = loadSound("assets/complete.mp3"); //doesn't do anything yet
+  error = loadSound("assets/error.wav");
   original = loadJSON("assets/sudoku1-original.json");
-  answer = loadJSON("assets/sudoku1-answer.json"); //used saveJSONArray() but still cannot get length
+  answer = loadJSON("assets/sudoku1-answer.json"); //tried saveJSONArray() but still cannot get length
   playerGrid = loadJSON("assets/sudoku1-player.json");
 }
 
@@ -61,91 +47,152 @@ function arrayLength(grid){
 }
 
 function setup() {
-  myCanvas = createCanvas(windowHeight*0.8, windowHeight*0.8);
-  myCanvas.position(windowWidth*0.5 - windowHeight*0.8 / 2, windowHeight*0.1);
+  createCanvas(windowWidth, windowHeight);
 
+  //center the grid
+  gridSize = windowWidth*0.38;
+  sidePadding = (windowWidth - gridSize)/2;
+  topPadding = (windowHeight - gridSize)/2;
+
+  sideEdge = sidePadding + gridSize;
+  vertEdge = topPadding + gridSize;
 
   rows = arrayLength(original);
   cols = original[0].length;
-  cellWidth = width/cols;
-  cellHeight = height/rows;
-
+  cellWidth = gridSize/cols;
+  cellHeight = gridSize/rows;
 }
 
 function draw() {
-  background(220);
+  background(195, 217, 197);
   drawGrid();
   displayMistakes();
+  displayRules();
 }
 
 function drawGrid(){
   for (let y=0; y<rows; y++){
     for (let x=0; x<cols; x++){
       strokeWeight(0.5);
-      // if (selectCell){ only fill if x and y are equal to the saved position of selected cell
-      //   fill(242, 239, 216);
-      // }
-      rect(x*cellWidth, y*cellHeight, cellWidth, cellHeight);
+      fill(242, 239, 216);
+      if (addNum && x === cellX && y === cellY || highlightNum && int(playerGrid[y][x]) === selectNum){ //highlights square
+        fill(219, 218, 191);
+      }
+      rect(x*cellWidth + sidePadding, y*cellHeight + topPadding, cellWidth, cellHeight);
       if (playerGrid[y][x] !== 0){
+        fill("black");
         textSize(25);
         textFont("VERDANA");
         textAlign(CENTER, CENTER);
-        text(playerGrid[y][x], x*cellWidth + cellWidth/2, y*cellHeight + cellHeight/2);
+        text(playerGrid[y][x], x*cellWidth + sidePadding + (cellWidth/2), y*cellHeight + topPadding + (cellHeight/2));
       }
-
     }
   }
+  drawGridOutline();
+}
+
+function drawGridOutline(){
   //draw border 
-  strokeWeight(5);
-  line(0, 0, myCanvas.width, 0); //top
-  line(myCanvas.width-1, myCanvas.width-1, 0, myCanvas.width-1); //bottom
-  line(myCanvas.width-1, 0, myCanvas.width-1, myCanvas.width-1); //right
-  line(0, 0, 0, myCanvas.width-1); //left
+  strokeWeight(2.5);
+  line(sidePadding, topPadding, sideEdge, topPadding); //top
+  line(sidePadding, topPadding + gridSize, sideEdge, vertEdge); //bottom
+  line(sideEdge, topPadding, sideEdge, vertEdge); //right
+  line(sidePadding, topPadding, sidePadding, vertEdge); //left
 
   //draw 3x3 outline
   strokeWeight(2.5);
-  line(0, myCanvas.width * 1/3, myCanvas.width-1, myCanvas.width * 1/3); // horiz. top
-  line(0, myCanvas.width * 2/3, myCanvas.width-1, myCanvas.width * 2/3); //horiz. bottom
-  line(myCanvas.width * 1/3, 0, myCanvas.width * 1/3, myCanvas.width-1); //vert. left
-  line(myCanvas.width * 2/3, 0, myCanvas.width * 2/3, myCanvas.width-1); //vert. right
+  line(sidePadding, topPadding + (gridSize * 1/3), sideEdge, topPadding + (gridSize * 1/3)); // horiz. top
+  line(sidePadding, topPadding + (gridSize * 2/3), sideEdge, topPadding + (gridSize * 2/3)); //horiz. bottom
+  line(sidePadding + (gridSize * 1/3), topPadding, sidePadding + (gridSize * 1/3), vertEdge); //vert. left
+  line(sidePadding + (gridSize * 2/3), topPadding, sidePadding + (gridSize * 2/3), vertEdge); //vert. right
 }
 
 function mousePressed(){
-  x = Math.floor(mouseX/cellWidth);
-  y = Math.floor(mouseY/cellHeight);
+  highlightNum = false;
+  addNum = false;
+  x = Math.floor((mouseX - sidePadding)/cellWidth);
+  y = Math.floor((mouseY - topPadding)/cellHeight);
 
-  // save position of selected cell
-  if (original[y][x] === 0) { //check if trying to select original number
-    selectCell = true;
+  if (int(playerGrid[y][x]) !== 0){
+    highlightNum = true; 
+    selectNum = int(playerGrid[y][x]);
   }
 
+  else if (original[y][x] === 0) { //check if trying to select original number
+    addNum = true;
+    cellX = x;
+    cellY = y;
+  }
+
+  else { //highlights all occurances of selected number
+    highlightNum = true;
+    selectNum = original[y][x];
+  }
 }
 
 function keyPressed(){
-  if (selectCell === true){
+  if (addNum === true){
 
     if (keyCode >= 49 && keyCode <= 57){ //user can only enter numbers 1-9
       playerGrid[y][x] = key;
       click.play();
-      selectCell = false;
+      addNum = false;
 
-      if (playerGrid[y][x] !== answer[y][x]){ //checks to see if correct
+      if (int(playerGrid[y][x]) !== answer[y][x]){ //checks to see if correct
         mistakes++;
+        error.play();
       }
     }
+  }
 
-    if (keyCode === BACKSPACE){ //deletes selected number
+  //clean this up!!!
+  else if (original[y][x] === 0){ //deletes selected number 
+    if (keyCode === BACKSPACE){ 
       click.play();
       playerGrid[y][x] = 0;
-      selectCell = false;
+      addNum = false;
+    }
+
+    else if (keyCode >= 49 && keyCode <= 57){
+      playerGrid[y][x] = key;
+      if (int(playerGrid[y][x]) !== answer[y][x]){ //checks to see if correct
+        mistakes++;
+        error.play();
+      }
+      else {
+        click.play();
+      }
     }
   }
 }
 
 function displayMistakes(){
   let mistakesText = "Mistakes: " + mistakes;
-  textSize(50);
-  textFont("VERDANA");
-  textAlign(CENTER, CENTER);
-  text(mistakesText, 0, myCanvas.height + 10);
+  fill("black");
+  textSize(30);
+  textFont("DIDOT");
+  textAlign(RIGHT, CENTER);
+  text(mistakesText, sideEdge, 45);
+}
+
+function displayRules(){
+  let rulesTitle = "HOW TO PLAY:";
+  fill("black");
+  textSize(25);
+  textFont("DIDOT");
+  textAlign(LEFT);
+  text(rulesTitle, 20, 30);
+
+  let point1 = "- Fill in the numbers 1 to 9 exactly once   in every row, column, and 3x3 square   outlined in the grid.";
+  textSize(20);
+  text(point1, 20, 70, sidePadding - 100);
+
+  let point2 = "- Click on an empty square and use your keyboard to fill in the number.";
+  text(point2, 20, 160, sidePadding - 100);
+
+  let point3 = "- Click on a number to highlight all       occurances of that number in the grid.";
+  text(point3, 20, 230, sidePadding - 100);
+
+  let point4 = "- Click on a number you wish to erase   and hit BACKSPACE";
+  text(point4, 20, 300, sidePadding - 100);
 }

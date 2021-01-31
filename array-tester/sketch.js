@@ -3,7 +3,7 @@
 // January 26, 2021
 //
 // Extra for Experts:
-// - describe what you did to take this project "above and beyond"
+// - 
 
 //Things to Do:
 //Outline selected numbers
@@ -13,10 +13,8 @@
 //Number size ratio
 
 let rows, cols, cellWidth, cellHeight;
-// let num;
 let selectCell = false;
 let x, y;
-// let myCanvas;
 let click, complete;
 let answer;
 let playerGrid;
@@ -24,6 +22,7 @@ let original;
 let mistakes = 0;
 let sidePadding, topPadding, gridSize;
 let sideEdge, vertEdge, bottomEdge;
+let cellX, cellY;
 
 function preload(){
   click = loadSound("assets/click1.wav");
@@ -60,7 +59,7 @@ function setup() {
 }
 
 function draw() {
-  background(220);
+  background(195, 217, 197);
   drawGrid();
   displayMistakes();
 }
@@ -69,11 +68,13 @@ function drawGrid(){
   for (let y=0; y<rows; y++){
     for (let x=0; x<cols; x++){
       strokeWeight(0.5);
-      // if (selectCell){ only fill if x and y are equal to the saved position of selected cell
-      //   fill(242, 239, 216);
-      // }
+      fill(242, 239, 216);
+      if (selectCell && x === cellX && y === cellY){ 
+        strokeWeight(3); //so ugly
+      }
       rect(x*cellWidth + sidePadding, y*cellHeight + topPadding, cellWidth, cellHeight);
       if (playerGrid[y][x] !== 0){
+        fill("black");
         textSize(25);
         textFont("VERDANA");
         textAlign(CENTER, CENTER);
@@ -107,6 +108,8 @@ function mousePressed(){
   // save position of selected cell
   if (original[y][x] === 0) { //check if trying to select original number
     selectCell = true;
+    cellX = x;
+    cellY = y;
   }
 
 }
@@ -134,8 +137,9 @@ function keyPressed(){
 
 function displayMistakes(){
   let mistakesText = "Mistakes: " + mistakes;
-  textSize(20);
+  fill("black");
+  textSize(30);
   textFont("VERDANA");
   textAlign(CENTER, CENTER);
-  text(mistakesText, windowWidth - 100, 30);
+  text(mistakesText, windowWidth - 120, 30);
 }
