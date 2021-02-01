@@ -11,7 +11,7 @@
 //Add music
 //Number size ratio
 //Add completion sound when finished row/col or square
-//Add buttons for level reset and start screen
+//Add buttons for level reset, start screen, and reveal answer
 //Re-organize keyPressed()
 
 let rows, cols, cellWidth, cellHeight;
@@ -19,7 +19,7 @@ let addNum = false;
 let highlightNum = false;
 let selectNum = "";
 let x, y;
-let click, complete, error;
+let click, complete, error, buttonSound;
 let answer;
 let playerGrid;
 let original;
@@ -32,6 +32,7 @@ function preload(){
   click = loadSound("assets/click1.wav");
   complete = loadSound("assets/complete.mp3"); //doesn't do anything yet
   error = loadSound("assets/error.wav");
+  buttonSound = loadSound("assets/button.flac");
   original = loadJSON("assets/sudoku1-original.json");
   answer = loadJSON("assets/sudoku1-answer.json"); //tried saveJSONArray() but still cannot get length
   playerGrid = loadJSON("assets/sudoku1-player.json");
@@ -54,6 +55,7 @@ function setup() {
   sidePadding = (windowWidth - gridSize)/2;
   topPadding = (windowHeight - gridSize)/2;
 
+  //These two variables are just to make the rest of the code shorter as these values are commonly used
   sideEdge = sidePadding + gridSize;
   vertEdge = topPadding + gridSize;
 
@@ -68,6 +70,7 @@ function draw() {
   drawGrid();
   displayMistakes();
   displayRules();
+  displayClearButton();
 }
 
 function drawGrid(){
@@ -108,6 +111,7 @@ function drawGridOutline(){
 }
 
 function mousePressed(){
+  //click within grid
   highlightNum = false;
   addNum = false;
   x = Math.floor((mouseX - sidePadding)/cellWidth);
@@ -130,6 +134,7 @@ function mousePressed(){
   }
 }
 
+//clean up this function!
 function keyPressed(){
   if (addNum === true){
 
@@ -145,7 +150,6 @@ function keyPressed(){
     }
   }
 
-  //clean this up!!!
   else if (original[y][x] === 0){ //deletes selected number 
     if (keyCode === BACKSPACE){ 
       click.play();
@@ -162,6 +166,7 @@ function keyPressed(){
       else {
         click.play();
       }
+      highlightNum = false;
     }
   }
 }
@@ -195,4 +200,26 @@ function displayRules(){
 
   let point4 = "- Click on a number you wish to erase   and hit BACKSPACE";
   text(point4, 20, 300, sidePadding - 100);
+}
+
+function displayClearButton(){
+  fill(219, 218, 191);
+  rect(sidePadding, vertEdge + 10, 100, 35, 10);
+  let clearText = "Clear";
+  fill("black");
+  textSize(25);
+  text(clearText, sidePadding + 20, vertEdge + 27);
+}
+
+//separate from mousePressed() to ensure that the buttons don't interfere with the gameplay
+function mouseClicked(){
+  if (mouseX > sidePadding && mouseX < sidePadding + 100 && mouseY > vertEdge + 10 && mouseY < vertEdge + 10 + 35) {
+    mistakes = 0;
+    for (let y = 0; y<rows; y++){
+      for (let x = 0; x<cols; x++){
+        playerGrid[y][x] = original[y][x];
+      }
+    }
+    buttonSound.play();
+  }
 }
