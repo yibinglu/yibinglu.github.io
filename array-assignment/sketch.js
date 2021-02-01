@@ -11,15 +11,19 @@
 //Add music
 //Number size ratio
 //Add completion sound when finished row/col or square
-//Add buttons for level reset, start screen, and reveal answer
+//Add buttons for start screen and reveal answer
 //Re-organize keyPressed()
+//Make wrong number red
+//Unselect square after a key is pressed
+
+//let newGrid = Object.values(playerGrid);
 
 let rows, cols, cellWidth, cellHeight;
 let addNum = false;
 let highlightNum = false;
 let selectNum = "";
 let x, y;
-let click, complete, error, buttonSound;
+let click, complete, error, buttonSound; //sounds
 let answer;
 let playerGrid;
 let original;
@@ -34,17 +38,8 @@ function preload(){
   error = loadSound("assets/error.wav");
   buttonSound = loadSound("assets/button.flac");
   original = loadJSON("assets/sudoku1-original.json");
-  answer = loadJSON("assets/sudoku1-answer.json"); //tried saveJSONArray() but still cannot get length
+  answer = loadJSON("assets/sudoku1-answer.json"); 
   playerGrid = loadJSON("assets/sudoku1-player.json");
-}
-
-//find length of JSON file
-function arrayLength(grid){
-  let length = 0;
-  for (let i in grid){ //json file is an object? 
-    length++;
-  }
-  return length;
 }
 
 function setup() {
@@ -59,8 +54,8 @@ function setup() {
   sideEdge = sidePadding + gridSize;
   vertEdge = topPadding + gridSize;
 
-  rows = arrayLength(original);
-  cols = original[0].length;
+  rows = 9;
+  cols = 9;
   cellWidth = gridSize/cols;
   cellHeight = gridSize/rows;
 }
@@ -84,8 +79,8 @@ function drawGrid(){
       rect(x*cellWidth + sidePadding, y*cellHeight + topPadding, cellWidth, cellHeight);
       if (playerGrid[y][x] !== 0){
         fill("black");
-        textSize(25);
-        textFont("VERDANA");
+        textSize(30);
+        textFont("DIDOT");
         textAlign(CENTER, CENTER);
         text(playerGrid[y][x], x*cellWidth + sidePadding + (cellWidth/2), y*cellHeight + topPadding + (cellHeight/2));
       }
@@ -102,7 +97,7 @@ function drawGridOutline(){
   line(sideEdge, topPadding, sideEdge, vertEdge); //right
   line(sidePadding, topPadding, sidePadding, vertEdge); //left
 
-  //draw 3x3 outline
+  //draw 3x3 outlines
   strokeWeight(2.5);
   line(sidePadding, topPadding + (gridSize * 1/3), sideEdge, topPadding + (gridSize * 1/3)); // horiz. top
   line(sidePadding, topPadding + (gridSize * 2/3), sideEdge, topPadding + (gridSize * 2/3)); //horiz. bottom
@@ -134,7 +129,7 @@ function mousePressed(){
   }
 }
 
-//clean up this function!
+//clean up this function!!!
 function keyPressed(){
   if (addNum === true){
 
@@ -150,8 +145,8 @@ function keyPressed(){
     }
   }
 
-  else if (original[y][x] === 0){ //deletes selected number 
-    if (keyCode === BACKSPACE){ 
+  else if (original[y][x] === 0){ 
+    if (keyCode === BACKSPACE){ //deletes selected number
       click.play();
       playerGrid[y][x] = 0;
       addNum = false;
@@ -188,17 +183,17 @@ function displayRules(){
   textAlign(LEFT);
   text(rulesTitle, 20, 30);
 
-  let point1 = "- Fill in the numbers 1 to 9 exactly once   in every row, column, and 3x3 square   outlined in the grid.";
+  let point1 = "- Fill in the numbers 1 to 9 exactly once in every row, column, and 3x3 square outlined in the grid.";
   textSize(20);
   text(point1, 20, 70, sidePadding - 100);
 
   let point2 = "- Click on an empty square and use your keyboard to fill in the number.";
   text(point2, 20, 160, sidePadding - 100);
 
-  let point3 = "- Click on a number to highlight all       occurances of that number in the grid.";
+  let point3 = "- Click on a number to highlight all occurances of that number in the grid.";
   text(point3, 20, 230, sidePadding - 100);
 
-  let point4 = "- Click on a number you wish to erase   and hit BACKSPACE";
+  let point4 = "- Click on a number you wish to erase and hit BACKSPACE";
   text(point4, 20, 300, sidePadding - 100);
 }
 
