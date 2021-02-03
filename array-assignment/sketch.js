@@ -7,14 +7,11 @@
 
 //Things to Do:
 //Highlight row and box of selected number
-//Startscreen
-//Add music
 //Number size ratio
 //Add completion sound when finished row/col or square
 //Add buttons for start screen and reveal answer
-//Re-organize keyPressed()
 //Make wrong number red
-//Unselect square after a key is pressed
+//Add different levels
 
 //let newGrid = Object.values(playerGrid);
 
@@ -24,26 +21,30 @@ let highlightNum = false;
 let selectNum = "";
 let x, y;
 let click, complete, error, buttonSound; //sounds
-let answer;
-let playerGrid;
-let original;
+let answer, playerGrid, original; //grids
 let mistakes = 0;
 let sidePadding, topPadding, gridSize;
 let sideEdge, vertEdge, bottomEdge;
 let cellX, cellY;
+let gamePlay = false;
+let backgroundMusic;
+// let leaf;
 
 function preload(){
   click = loadSound("assets/click1.wav");
   complete = loadSound("assets/complete.mp3"); //doesn't do anything yet
   error = loadSound("assets/error.wav");
   buttonSound = loadSound("assets/button.flac");
+  backgroundMusic = loadSound("assets/music.ogg");
   original = loadJSON("assets/sudoku1-original.json");
   answer = loadJSON("assets/sudoku1-answer.json"); 
   playerGrid = loadJSON("assets/sudoku1-player.json");
+  // leaf = createImage("assets/leaf.gif");
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  backgroundMusic.loop();
 
   //center the grid
   gridSize = windowWidth*0.38;
@@ -62,10 +63,21 @@ function setup() {
 
 function draw() {
   background(195, 217, 197);
-  drawGrid();
-  displayMistakes();
-  displayRules();
-  displayClearButton();
+  if (gamePlay === true){
+    drawGrid();
+    displayMistakes();
+    displayRules();
+    displayClearButton();
+    displayHomeButton();
+    displayRevealButton();
+  }
+
+  else {
+    displayTitle();
+    displayPlayButton();
+    // leaf.position(100,100);
+  }
+ 
 }
 
 function drawGrid(){
@@ -73,7 +85,8 @@ function drawGrid(){
     for (let x=0; x<cols; x++){
       strokeWeight(0.5);
       fill(242, 239, 216);
-      if (addNum && x === cellX && y === cellY || highlightNum && int(playerGrid[y][x]) === selectNum){ //highlights square
+      if (addNum && x === cellX && y === cellY ||
+         highlightNum && int(playerGrid[y][x]) === selectNum){ //highlights square
         fill(219, 218, 191);
       }
       rect(x*cellWidth + sidePadding, y*cellHeight + topPadding, cellWidth, cellHeight);
@@ -106,32 +119,34 @@ function drawGridOutline(){
 }
 
 function mousePressed(){
-  //click within grid
-  highlightNum = false;
-  addNum = false;
-  x = Math.floor((mouseX - sidePadding)/cellWidth);
-  y = Math.floor((mouseY - topPadding)/cellHeight);
-
-  if (int(playerGrid[y][x]) !== 0){
-    highlightNum = true; 
-    selectNum = int(playerGrid[y][x]);
-  }
-
-  else if (original[y][x] === 0) { //check if trying to select original number
-    addNum = true;
-    cellX = x;
-    cellY = y;
-  }
-
-  else { //highlights all occurances of selected number
-    highlightNum = true;
-    selectNum = original[y][x];
+  if (gamePlay === true){
+    //click within grid
+    highlightNum = false;
+    addNum = false;
+    x = Math.floor((mouseX - sidePadding)/cellWidth);
+    y = Math.floor((mouseY - topPadding)/cellHeight);
+  
+    if (int(playerGrid[y][x]) !== 0){ //if there is a number there, highlight all occurances
+      highlightNum = true; 
+  
+      if (original[y][x] !== 0){
+        selectNum = original[y][x];
+      }
+      else{
+        selectNum = int(playerGrid[y][x]);
+      }
+    }
+  
+    if (original[y][x] === 0) { //is the square you selected able to be changed?
+      addNum = true;
+      cellX = x;
+      cellY = y;
+    }
   }
 }
 
-//clean up this function!!!
 function keyPressed(){
-  if (addNum === true){
+  if (addNum === true){ 
 
     if (keyCode >= 49 && keyCode <= 57){ //user can only enter numbers 1-9
       playerGrid[y][x] = key;
@@ -143,26 +158,55 @@ function keyPressed(){
         error.play();
       }
     }
-  }
 
-  else if (original[y][x] === 0){ 
-    if (keyCode === BACKSPACE){ //deletes selected number
+    if (keyCode === BACKSPACE){ 
       click.play();
       playerGrid[y][x] = 0;
       addNum = false;
     }
+    highlightNum = false; 
+  }
+}
 
-    else if (keyCode >= 49 && keyCode <= 57){
-      playerGrid[y][x] = key;
-      if (int(playerGrid[y][x]) !== answer[y][x]){ //checks to see if correct
-        mistakes++;
-        error.play();
+//separate from mousePressed() to ensure that the buttons don't interfere with the gameplay
+function mouseClicked(){
+  //clear button
+  if (mouseX > sidePadding && mouseX < sidePadding + 100 && 
+    mouseY > vertEdge + 10 && mouseY < vertEdge + 10 + 35) {
+    mistakes = 0;
+    for (let y = 0; y<rows; y++){
+      for (let x = 0; x<cols; x++){
+        playerGrid[y][x] = original[y][x];
       }
-      else {
-        click.play();
-      }
-      highlightNum = false;
     }
+    buttonSound.play();
+  }
+
+  //home button
+  if (mouseX > sidePadding*2 && mouseX < sidePadding*2 + 100 && 
+    mouseY > vertEdge + 10 && mouseY < vertEdge + 10 + 35) { 
+    for (let y = 0; y<rows; y++){
+      for (let x = 0; x<cols; x++){
+        playerGrid[y][x] = original[y][x];
+      }
+    }
+    gamePlay = false;
+    buttonSound.play();
+  }
+
+  if (gamePlay === false){
+    //play button
+    if (mouseX > windowWidth/2 - 175/2 && mouseX < windowWidth/2 + 175/2 &&
+      mouseY > windowHeight/2 + 75 && mouseY < windowHeight/2 + 125){
+      gamePlay = true;
+      buttonSound.play();
+    }
+  }
+
+  //reveal answer button
+  if (mouseX > windowWidth/2 - 75 && mouseX < windowWidth/2 + 100 &&
+    mouseY > vertEdge + 10 && mouseY < vertEdge + 45){
+    revealAnswer();
   }
 }
 
@@ -206,15 +250,62 @@ function displayClearButton(){
   text(clearText, sidePadding + 20, vertEdge + 27);
 }
 
-//separate from mousePressed() to ensure that the buttons don't interfere with the gameplay
-function mouseClicked(){
-  if (mouseX > sidePadding && mouseX < sidePadding + 100 && mouseY > vertEdge + 10 && mouseY < vertEdge + 10 + 35) {
-    mistakes = 0;
-    for (let y = 0; y<rows; y++){
-      for (let x = 0; x<cols; x++){
-        playerGrid[y][x] = original[y][x];
-      }
+function displayHomeButton(){
+  fill(219, 218, 191);
+  rect(sidePadding*2, vertEdge + 10, 100, 35, 10);
+  let homeText = "Home";
+  fill("black");
+  textSize(25);
+  text(homeText, sidePadding*2 + 20, vertEdge + 27);
+}
+
+function displayRevealButton(){
+  fill(219, 218, 191);
+  rect(windowWidth/2 - 75, vertEdge + 10, 175, 35, 10);
+  let revealText = "Reveal Answer";
+  fill("black");
+  textSize(25);
+  text(revealText, windowWidth/2 - 65, vertEdge + 27);
+}
+
+function revealAnswer(){
+  for (let y = 0; y<rows; y++){
+    for (let x = 0; x<cols; x++){
+      playerGrid[y][x] = answer[y][x];
     }
-    buttonSound.play();
+  }
+  if (checkCompletion()){ // need to alter so that it will play when the user wins too
+    complete.play();
   }
 }
+
+function displayTitle(){
+  let title = "SUDOKU";
+  textAlign(CENTER, CENTER);
+  textSize(75);
+  textFont("DIDOT");
+  text(title, windowWidth/2, windowHeight/2 - 100);
+}
+
+function displayPlayButton(){
+  fill(219, 218, 191);
+  rect(windowWidth/2 - 175/2, windowHeight/2 + 75, 175, 50, 20);
+  let playText = "PLAY";
+  fill("black");
+  textSize(35);
+  textAlign(CENTER, CENTER);
+  text(playText, windowWidth/2, windowHeight/2 + 100);
+}
+
+function checkCompletion(){
+  for (let y = 0; y<rows; y++){
+    for (let x = 0; x<cols; x++){
+      if (playerGrid[y][x] !== answer[y][x]){
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+
