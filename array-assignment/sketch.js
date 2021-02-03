@@ -3,13 +3,9 @@
 // January 26, 2021
 //
 // Extra for Experts:
-// - 
+// - Selecting a number would highlight all occurances of that number
 
 //Things to Do:
-//Highlight row and box of selected number
-//Number size ratio
-//Add completion sound when finished row/col or square
-//Add buttons for start screen and reveal answer
 //Make wrong number red
 //Add different levels
 
@@ -28,7 +24,7 @@ let sideEdge, vertEdge, bottomEdge;
 let cellX, cellY;
 let gamePlay = false;
 let backgroundMusic;
-// let leaf;
+let wrongNumber = false;
 
 function preload(){
   click = loadSound("assets/click1.wav");
@@ -39,7 +35,6 @@ function preload(){
   original = loadJSON("assets/sudoku1-original.json");
   answer = loadJSON("assets/sudoku1-answer.json"); 
   playerGrid = loadJSON("assets/sudoku1-player.json");
-  // leaf = createImage("assets/leaf.gif");
 }
 
 function setup() {
@@ -75,7 +70,6 @@ function draw() {
   else {
     displayTitle();
     displayPlayButton();
-    // leaf.position(100,100);
   }
  
 }
@@ -91,6 +85,12 @@ function drawGrid(){
       }
       rect(x*cellWidth + sidePadding, y*cellHeight + topPadding, cellWidth, cellHeight);
       if (playerGrid[y][x] !== 0){
+        // if (wrongNumber === true && x === cellX && y === cellY){
+        //   fill("red");
+        // }
+        // else{
+        //   fill("black");
+        // }
         fill("black");
         textSize(30);
         textFont("DIDOT");
@@ -155,6 +155,7 @@ function keyPressed(){
 
       if (int(playerGrid[y][x]) !== answer[y][x]){ //checks to see if correct
         mistakes++;
+        // wrongNumber = true; 
         error.play();
       }
     }
@@ -183,19 +184,20 @@ function mouseClicked(){
   }
 
   //home button
-  if (mouseX > sidePadding*2 && mouseX < sidePadding*2 + 100 && 
-    mouseY > vertEdge + 10 && mouseY < vertEdge + 10 + 35) { 
+  if (mouseX > sidePadding + gridSize - 100 && mouseX < sidePadding + gridSize && 
+    mouseY > vertEdge + 10 && mouseY < vertEdge + 45) { 
     for (let y = 0; y<rows; y++){
       for (let x = 0; x<cols; x++){
         playerGrid[y][x] = original[y][x];
       }
     }
     gamePlay = false;
+    mistakes = 0;
     buttonSound.play();
   }
 
+  //play button
   if (gamePlay === false){
-    //play button
     if (mouseX > windowWidth/2 - 175/2 && mouseX < windowWidth/2 + 175/2 &&
       mouseY > windowHeight/2 + 75 && mouseY < windowHeight/2 + 125){
       gamePlay = true;
@@ -204,7 +206,7 @@ function mouseClicked(){
   }
 
   //reveal answer button
-  if (mouseX > windowWidth/2 - 75 && mouseX < windowWidth/2 + 100 &&
+  if (mouseX > windowWidth/2 - 175/2 && mouseX < windowWidth/2 - 175/2 + 175 &&
     mouseY > vertEdge + 10 && mouseY < vertEdge + 45){
     revealAnswer();
   }
@@ -231,7 +233,7 @@ function displayRules(){
   textSize(20);
   text(point1, 20, 70, sidePadding - 100);
 
-  let point2 = "- Click on an empty square and use your keyboard to fill in the number.";
+  let point2 = "- Click on an empty square and use your \n\tkeyboard to fill in the number.";
   text(point2, 20, 160, sidePadding - 100);
 
   let point3 = "- Click on a number to highlight all occurances of that number in the grid.";
@@ -252,20 +254,20 @@ function displayClearButton(){
 
 function displayHomeButton(){
   fill(219, 218, 191);
-  rect(sidePadding*2, vertEdge + 10, 100, 35, 10);
+  rect(sidePadding + gridSize - 100, vertEdge + 10, 100, 35, 10);
   let homeText = "Home";
   fill("black");
   textSize(25);
-  text(homeText, sidePadding*2 + 20, vertEdge + 27);
+  text(homeText, sidePadding + gridSize - 80, vertEdge + 27);
 }
 
 function displayRevealButton(){
   fill(219, 218, 191);
-  rect(windowWidth/2 - 75, vertEdge + 10, 175, 35, 10);
+  rect(windowWidth/2 - 175/2, vertEdge + 10, 175, 35, 10);
   let revealText = "Reveal Answer";
   fill("black");
   textSize(25);
-  text(revealText, windowWidth/2 - 65, vertEdge + 27);
+  text(revealText, windowWidth/2 - 155/2, vertEdge + 27);
 }
 
 function revealAnswer(){
