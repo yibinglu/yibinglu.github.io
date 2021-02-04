@@ -24,7 +24,7 @@ let sideEdge, vertEdge, bottomEdge;
 let cellX, cellY;
 let gamePlay = false;
 let backgroundMusic;
-let wrongNumber = false;
+// let wrongNumber = false;
 
 function preload(){
   click = loadSound("assets/click1.wav");
@@ -233,7 +233,7 @@ function displayRules(){
   textSize(20);
   text(point1, 20, 70, sidePadding - 100);
 
-  let point2 = "- Click on an empty square and use your \n\tkeyboard to fill in the number.";
+  let point2 = "- Click on an empty square and use your \n\t keyboard to fill in the number.";
   text(point2, 20, 160, sidePadding - 100);
 
   let point3 = "- Click on a number to highlight all occurances of that number in the grid.";
