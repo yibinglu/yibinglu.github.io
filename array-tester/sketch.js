@@ -25,8 +25,6 @@ let cellX, cellY;
 let gamePlay = false;
 let backgroundMusic;
 // let wrongNumber = false;
-let point1;
-let spacedText;
 
 function preload(){
   click = loadSound("assets/click1.wav");
@@ -231,10 +229,25 @@ function displayRules(){
   textAlign(LEFT);
   text(rulesTitle, 20, 30);
 
-  point1 = ["- Fill ", "in ", "the ", "numbers ", "1 ", "to ", "9 ", "exactly ", "once ", "in ", "every ", "row, ", "column, ", "and ", "3x3 ", "square ", "outlined ", "in ", "the ", "grid. "];
+  let point1 = ["- Fill ", "in ", "the ", "numbers ", "1 ", "to ", "9 ", "exactly ", "once ", "in ", "every ", "row, ", "column, ", "and ", "3x3 ", "square ", "outlined ", "in ", "the ", "grid. "];
   textSize(20);
-  spacedText = textLengthCheck(point1);
-  text(spacedText, 20, 70, sidePadding - sidePadding*0.2);
+  let point1Spaced = textLengthCheck(point1);
+  text(point1Spaced, 20, 70, sidePadding - sidePadding*0.2);
+
+  let point2 = ["- Click ", "on ", "an ", "empty ", "sqaure ", "and ", "use ", "your ", "keyboard ", "to ", "fill ", "in ", "the ", "number. "];
+  textSize(20);
+  let point2Spaced = textLengthCheck(point2);
+  text(point2Spaced, 20, 160, sidePadding - sidePadding*0.2);
+
+  let point3 = ["- Click ", "on ", "a ", "number ", "to ", "highlight ", "all ", "occurances ", "of ", "that ", "number ", "in ", "the ", "grid. "];
+  textSize(20);
+  let point3Spaced = textLengthCheck(point3);
+  text(point3Spaced, 20, 230, sidePadding - sidePadding*0.2);
+
+  let point4 = ["- Click ", "on ", "an ", "number ", "you ", "wish ", "to ", "erase ", "and ", "hit ", "BACKSPACE. "];
+  textSize(20);
+  let point4Spaced = textLengthCheck(point4);
+  text(point4Spaced, 20, 300, sidePadding - sidePadding*0.2);
 
   // let point2 = "- Click on an empty square and use your \n\t keyboard to fill in the number.";
   // text(point2, 20, 160, sidePadding - 100);
