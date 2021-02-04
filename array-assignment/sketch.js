@@ -4,6 +4,7 @@
 //
 // Extra for Experts:
 // - Selecting a number would highlight all occurances of that number
+// - The rules never cut off in the middle of a word
 
 //Things to Do:
 //Make wrong number red
@@ -31,7 +32,7 @@ function preload(){
   complete = loadSound("assets/complete.mp3"); //doesn't do anything yet
   error = loadSound("assets/error.wav");
   buttonSound = loadSound("assets/button.flac");
-  backgroundMusic = loadSound("assets/music.ogg");
+  backgroundMusic = loadSound("assets/music.ogg"); 
   original = loadJSON("assets/sudoku1-original.json");
   answer = loadJSON("assets/sudoku1-answer.json"); 
   playerGrid = loadJSON("assets/sudoku1-player.json");
@@ -46,7 +47,7 @@ function setup() {
   sidePadding = (windowWidth - gridSize)/2;
   topPadding = (windowHeight - gridSize)/2;
 
-  //These two variables are just to make the rest of the code shorter as these values are commonly used
+  //These variables make the rest of the code shorter because they are commonly used
   sideEdge = sidePadding + gridSize;
   vertEdge = topPadding + gridSize;
 
@@ -229,18 +230,41 @@ function displayRules(){
   textAlign(LEFT);
   text(rulesTitle, 20, 30);
 
-  let point1 = "- Fill in the numbers 1 to 9 exactly once in every row, column, and 3x3 square outlined in the grid.";
+  let point1 = ["- Fill ", "in ", "the ", "numbers ", "1 ", "to ", "9 ", "exactly ", "once ", "in ", "every ", "row, ", "column, ", "and ", "3x3 ", "square ", "outlined ", "in ", "the ", "grid. "];
   textSize(20);
-  text(point1, 20, 70, sidePadding - 100);
+  let point1Spaced = textLengthCheck(point1);
+  text(point1Spaced, 20, 70, sidePadding - sidePadding*0.2);
 
-  let point2 = "- Click on an empty square and use your \n\t keyboard to fill in the number.";
-  text(point2, 20, 160, sidePadding - 100);
+  let point2 = ["- Click ", "on ", "an ", "empty ", "sqaure ", "and ", "use ", "your ", "keyboard ", "to ", "fill ", "in ", "the ", "number. "];
+  textSize(20);
+  let point2Spaced = textLengthCheck(point2);
+  text(point2Spaced, 20, 160, sidePadding - sidePadding*0.2);
 
-  let point3 = "- Click on a number to highlight all occurances of that number in the grid.";
-  text(point3, 20, 230, sidePadding - 100);
+  let point3 = ["- Click ", "on ", "a ", "number ", "to ", "highlight ", "all ", "occurances ", "of ", "that ", "number ", "in ", "the ", "grid. "];
+  textSize(20);
+  let point3Spaced = textLengthCheck(point3);
+  text(point3Spaced, 20, 230, sidePadding - sidePadding*0.2);
 
-  let point4 = "- Click on a number you wish to erase and hit BACKSPACE";
-  text(point4, 20, 300, sidePadding - 100);
+  let point4 = ["- Click ", "on ", "an ", "number ", "you ", "wish ", "to ", "erase ", "and ", "hit ", "BACKSPACE. "];
+  textSize(20);
+  let point4Spaced = textLengthCheck(point4);
+  text(point4Spaced, 20, 300, sidePadding - sidePadding*0.2);
+}
+
+function textLengthCheck(theText){
+  let textStr = "";
+  let totalLength = 0;
+  for (let i = 0; i<theText.length; i++){
+    totalLength += textWidth(theText[i]);
+    if (totalLength > sidePadding - sidePadding*0.2){
+      textStr = textStr.concat("\n\t");
+      totalLength = 0;
+    }
+    textStr = textStr.concat(theText[i]);
+  }
+  // console.log(textStr);
+  return textStr;
+
 }
 
 function displayClearButton(){

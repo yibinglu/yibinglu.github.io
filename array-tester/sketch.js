@@ -4,6 +4,7 @@
 //
 // Extra for Experts:
 // - Selecting a number would highlight all occurances of that number
+// - The rules never cut off in the middle of a word
 
 //Things to Do:
 //Make wrong number red
@@ -24,6 +25,7 @@ let sideEdge, vertEdge, bottomEdge;
 let cellX, cellY;
 let gamePlay = false;
 let backgroundMusic;
+let ballArray = [];
 // let wrongNumber = false;
 
 function preload(){
@@ -46,7 +48,7 @@ function setup() {
   sidePadding = (windowWidth - gridSize)/2;
   topPadding = (windowHeight - gridSize)/2;
 
-  //These two variables are just to make the rest of the code shorter as these values are commonly used
+  //These varibales make the rest of the code shorter because they are commonly used
   sideEdge = sidePadding + gridSize;
   vertEdge = topPadding + gridSize;
 
@@ -70,8 +72,15 @@ function draw() {
   else {
     displayTitle();
     displayPlayButton();
+    numberBounce();
   }
- 
+}
+
+function numberBounce(){
+  for (let i=0; i<ballArray.length; i++) {     
+    ballArray[i].move();
+    ballArray[i].display();
+  }
 }
 
 function drawGrid(){
@@ -142,6 +151,11 @@ function mousePressed(){
       cellX = x;
       cellY = y;
     }
+  }
+
+  else if (gamePlay === false && mouseX < windowWidth/2 - 175/2 || mouseX > windowWidth/2 + 175/2 || mouseY < windowHeight/2 + 75 || mouseY > windowHeight/2 + 125){
+    let theBall = new Ball(mouseX, mouseY, random(10, 40));
+    ballArray.push(theBall);
   }
 }
 
@@ -248,15 +262,6 @@ function displayRules(){
   textSize(20);
   let point4Spaced = textLengthCheck(point4);
   text(point4Spaced, 20, 300, sidePadding - sidePadding*0.2);
-
-  // let point2 = "- Click on an empty square and use your \n\t keyboard to fill in the number.";
-  // text(point2, 20, 160, sidePadding - 100);
-
-  // let point3 = "- Click on a number to highlight all occurances of that number in the grid.";
-  // text(point3, 20, 230, sidePadding - 100);
-
-  // let point4 = "- Click on a number you wish to erase and hit BACKSPACE";
-  // text(point4, 20, 300, sidePadding - 100);
 }
 
 function textLengthCheck(theText){
@@ -318,6 +323,7 @@ function displayTitle(){
   textAlign(CENTER, CENTER);
   textSize(75);
   textFont("DIDOT");
+  fill("black");
   text(title, windowWidth/2, windowHeight/2 - 100);
 }
 
@@ -342,4 +348,31 @@ function checkCompletion(){
   return true;
 }
 
+class Ball {
+  constructor(x, y, radius) {
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+    this.dx = random(-5, 5);
+    this.dy = random(-5, 5);
+    this.someColor = color(random(255), random(255), random(255), random(255));
+  }
 
+  display() {
+    fill(this.someColor);
+    ellipse(this.x, this.y, this.radius*2, this.radius*2);
+  }
+
+  move() {
+    this.x += this.dx;
+    this.y += this.dy;
+
+    //bounce on walls
+    if (this.x - this.radius < 0 || this.x + this.radius > width) {
+      this.dx *= -1;
+    }
+    if (this.y - this.radius < 0 || this.y + this.radius > height) {
+      this.dy *= -1;
+    }
+  }
+}
