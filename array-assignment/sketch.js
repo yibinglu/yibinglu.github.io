@@ -7,10 +7,7 @@
 // - The lines of text in the rules wil start a new line if the next word does not fit
 
 //Things to Do:
-//Make wrong number red
 //Add different levels
-
-//let newGrid = Object.values(playerGrid);
 
 let rows, cols, cellWidth, cellHeight;
 let addNum = false;
@@ -27,14 +24,13 @@ let gamePlay = false;
 let backgroundMusic;
 let numArray = [];
 let isComplete = false;
-// let wrongNumber = false;
 
 function preload(){
   click = loadSound("assets/click1.wav");
   complete = loadSound("assets/complete.mp3"); //doesn't do anything yet
   error = loadSound("assets/error.wav");
   buttonSound = loadSound("assets/button.flac");
-  // backgroundMusic = loadSound("assets/music.ogg"); 
+  backgroundMusic = loadSound("assets/music.ogg"); 
   original = loadJSON("assets/sudoku1-original.json");
   answer = loadJSON("assets/sudoku1-answer.json"); 
   playerGrid = loadJSON("assets/sudoku1-player.json");
@@ -42,7 +38,7 @@ function preload(){
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  // backgroundMusic.loop();
+  backgroundMusic.loop();
 
   //center the grid
   gridSize = windowWidth*0.38;
@@ -101,13 +97,13 @@ function drawGrid(){
       }
       rect(x*cellWidth + sidePadding, y*cellHeight + topPadding, cellWidth, cellHeight);
       if (playerGrid[y][x] !== 0){
-        // if (wrongNumber === true && x === cellX && y === cellY){
-        //   fill("red");
-        // }
-        // else{
-        //   fill("black");
-        // }
-        fill("black");
+
+        if (int(playerGrid[y][x]) !== answer[y][x]){
+          fill("red");
+        }
+        else{
+          fill("black");
+        }
         textSize(30);
         textFont("DIDOT");
         textAlign(CENTER, CENTER);
@@ -141,8 +137,9 @@ function mousePressed(){
     addNum = false;
     x = Math.floor((mouseX - sidePadding)/cellWidth);
     y = Math.floor((mouseY - topPadding)/cellHeight);
-  
-    if (int(playerGrid[y][x]) !== 0){ //if there is a number there, highlight all occurances
+
+    //if there is a number there, highlight all occurances
+    if (int(playerGrid[y][x]) !== 0){ 
       highlightNum = true; 
   
       if (original[y][x] !== 0){
@@ -153,7 +150,8 @@ function mousePressed(){
       }
     }
   
-    if (original[y][x] === 0) { //is the square you selected able to be changed?
+    //check if square selected is able to be changed
+    if (original[y][x] === 0) { 
       addNum = true;
       cellX = x;
       cellY = y;
@@ -177,7 +175,6 @@ function keyPressed(){
 
       if (int(playerGrid[y][x]) !== answer[y][x]){ //checks to see if correct
         mistakes++;
-        // wrongNumber = true; 
         error.play();
       }
     }
