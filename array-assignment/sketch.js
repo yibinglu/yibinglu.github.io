@@ -6,9 +6,6 @@
 // - Selecting a number would highlight all occurances of that number
 // - The lines of text in the rules wil start a new line if the next word does not fit
 
-//Things to Do:
-//Add different levels
-
 let rows, cols, cellWidth, cellHeight;
 let addNum = false;
 let highlightNum = false;
@@ -27,7 +24,7 @@ let isComplete = false;
 
 function preload(){
   click = loadSound("assets/click1.wav");
-  complete = loadSound("assets/complete.mp3"); //doesn't do anything yet
+  complete = loadSound("assets/complete.mp3");
   error = loadSound("assets/error.wav");
   buttonSound = loadSound("assets/button.flac");
   backgroundMusic = loadSound("assets/music.ogg"); 
@@ -79,25 +76,21 @@ function draw() {
   }
 }
 
-function numberBounce(){
-  for (let i=0; i<numArray.length; i++) {     
-    numArray[i].move();
-    numArray[i].display();
-  }
-}
-
 function drawGrid(){
   for (let y=0; y<rows; y++){
     for (let x=0; x<cols; x++){
       strokeWeight(0.5);
       fill(242, 239, 216);
+
+      //highlights square
       if (addNum && x === cellX && y === cellY ||
-         highlightNum && int(playerGrid[y][x]) === selectNum){ //highlights square
+         highlightNum && int(playerGrid[y][x]) === selectNum){
         fill(219, 218, 191);
       }
       rect(x*cellWidth + sidePadding, y*cellHeight + topPadding, cellWidth, cellHeight);
-      if (playerGrid[y][x] !== 0){
 
+      //displays wrong numbers red and correct numbers black
+      if (playerGrid[y][x] !== 0){
         if (int(playerGrid[y][x]) !== answer[y][x]){
           fill("red");
         }
@@ -158,6 +151,7 @@ function mousePressed(){
     }
   }
 
+  //numbers bouncing on home screen
   else if (gamePlay === false && mouseX < windowWidth/2 - 175/2 || mouseX > windowWidth/2 + 175/2 || mouseY < windowHeight/2 + 75 || mouseY > windowHeight/2 + 125){
     let theNum = new Num(mouseX, mouseY);
     numArray.push(theNum);
@@ -168,12 +162,14 @@ function mousePressed(){
 function keyPressed(){
   if (addNum === true){ 
 
-    if (keyCode >= 49 && keyCode <= 57){ //user can only enter numbers 1-9
+    //user can only enter numbers 1-9
+    if (keyCode >= 49 && keyCode <= 57){ 
       playerGrid[y][x] = key;
       click.play();
       addNum = false;
 
-      if (int(playerGrid[y][x]) !== answer[y][x]){ //checks to see if correct
+      //checks to see if correct
+      if (int(playerGrid[y][x]) !== answer[y][x]){ 
         mistakes++;
         error.play();
       }
@@ -252,25 +248,33 @@ function displayRules(){
   textAlign(LEFT);
   text(rulesTitle, 20, 30);
 
-  let point1 = ["- Fill ", "in ", "the ", "numbers ", "1 ", "to ", "9 ", "exactly ", "once ", "in ", "every ", "row, ", "column, ", "and ", "3x3 ", "square ", "outlined ", "in ", "the ", "grid. "];
+  let point1 = ["- Fill ", "in ", "the ", "numbers ", "1 ", "to ", "9 ", "exactly ", "once ", "in ", "every ", "row, ", "column, ", "and ", "3x3 ", "square ", "outlined ", "in ", "the ", "grid."];
   textSize(20);
   let point1Spaced = textLengthCheck(point1);
   text(point1Spaced, 20, 70, sidePadding - sidePadding*0.2);
+  let point1Lines = point1Spaced.match(/\n/g).length +1;
+  console.log(point1Lines);
 
   let point2 = ["- Click ", "on ", "an ", "empty ", "sqaure ", "and ", "use ", "your ", "keyboard ", "to ", "fill ", "in ", "the ", "number. "];
   textSize(20);
   let point2Spaced = textLengthCheck(point2);
-  text(point2Spaced, 20, 160, sidePadding - sidePadding*0.2);
+  text(point2Spaced, 20, 140, sidePadding - sidePadding*0.2);
+  let point2Lines = point2Spaced.match(/\n/g).length +1;
+  console.log(point2Lines);
 
   let point3 = ["- Click ", "on ", "a ", "number ", "to ", "highlight ", "all ", "occurances ", "of ", "that ", "number ", "in ", "the ", "grid. "];
   textSize(20);
   let point3Spaced = textLengthCheck(point3);
-  text(point3Spaced, 20, 230, sidePadding - sidePadding*0.2);
+  text(point3Spaced, 20, 210, sidePadding - sidePadding*0.2);
+  let point3Lines = point3Spaced.match(/\n/g).length +1;
+  console.log(point3Lines);
 
   let point4 = ["- Click ", "on ", "an ", "number ", "you ", "wish ", "to ", "erase ", "and ", "hit ", "BACKSPACE. "];
   textSize(20);
   let point4Spaced = textLengthCheck(point4);
-  text(point4Spaced, 20, 300, sidePadding - sidePadding*0.2);
+  text(point4Spaced, 20, 280, sidePadding - sidePadding*0.2);
+  let point4Lines = point4Spaced.match(/\n/g).length +1;
+  console.log(point4Lines);
 }
 
 function textLengthCheck(theText){
@@ -279,13 +283,15 @@ function textLengthCheck(theText){
   for (let i = 0; i<theText.length; i++){
     totalLength += textWidth(theText[i]);
     if (totalLength > sidePadding - sidePadding*0.2){
-      textStr = textStr.concat("\n\t");
-      totalLength = 0;
+      textStr = textStr.concat("\n");
+      textStr = textStr.concat(theText[i]);
+      totalLength = textWidth(theText[i]);
     }
-    textStr = textStr.concat(theText[i]);
+    else {
+      textStr = textStr.concat(theText[i]);
+    }
   }
   return textStr;
-
 }
 
 function displayClearButton(){
@@ -337,6 +343,7 @@ function displayTitle(){
 }
 
 function displayPlayButton(){
+  strokeWeight(2);
   fill(219, 218, 191);
   rect(windowWidth/2 - 175/2, windowHeight/2 + 75, 175, 50, 20);
   let playText = "PLAY";
@@ -357,14 +364,21 @@ function checkCompletion(){
   return true;
 }
 
+function numberBounce(){
+  for (let i=0; i<numArray.length; i++) {     
+    numArray[i].move();
+    numArray[i].display();
+  }
+}
+
 class Num {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.dx = random(-3, 3);
-    this.dy = random(-3, 3);
+    this.dx = random(-4, 4);
+    this.dy = random(-4, 4);
     this.chosenNum = Math.round(random(1, 9));
-    this.fontSize = random(30, 45);
+    this.fontSize = random(35, 60);
   }
 
   display() {
