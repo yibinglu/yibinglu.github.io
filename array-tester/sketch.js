@@ -4,7 +4,7 @@
 //
 // Extra for Experts:
 // - Selecting a number would highlight all occurances of that number
-// - The rules never cut off in the middle of a word
+// - The lines of text in the rules wil start a new line if the next word does not fit
 
 //Things to Do:
 //Make wrong number red
@@ -25,8 +25,11 @@ let sideEdge, vertEdge, bottomEdge;
 let cellX, cellY;
 let gamePlay = false;
 let backgroundMusic;
-let ballArray = [];
-// let wrongNumber = false;
+let numArray = [];
+let isComplete = false;
+let wrongNumber = false;
+let wrongNumberLocations = [];
+let index;
 
 function preload(){
   click = loadSound("assets/click1.wav");
@@ -48,7 +51,7 @@ function setup() {
   sidePadding = (windowWidth - gridSize)/2;
   topPadding = (windowHeight - gridSize)/2;
 
-  //These varibales make the rest of the code shorter because they are commonly used
+  //These variables make the rest of the code shorter because they are commonly used
   sideEdge = sidePadding + gridSize;
   vertEdge = topPadding + gridSize;
 
@@ -67,6 +70,12 @@ function draw() {
     displayClearButton();
     displayHomeButton();
     displayRevealButton();
+
+    //check if complete and play sound once
+    if (checkCompletion() && isComplete === false){ 
+      complete.play();
+      isComplete = true;
+    }
   }
 
   else {
@@ -77,9 +86,9 @@ function draw() {
 }
 
 function numberBounce(){
-  for (let i=0; i<ballArray.length; i++) {     
-    ballArray[i].move();
-    ballArray[i].display();
+  for (let i=0; i<numArray.length; i++) {     
+    numArray[i].move();
+    numArray[i].display();
   }
 }
 
@@ -94,13 +103,14 @@ function drawGrid(){
       }
       rect(x*cellWidth + sidePadding, y*cellHeight + topPadding, cellWidth, cellHeight);
       if (playerGrid[y][x] !== 0){
-        // if (wrongNumber === true && x === cellX && y === cellY){
-        //   fill("red");
-        // }
-        // else{
-        //   fill("black");
-        // }
-        fill("black");
+        if (wrongNumber === true && x === cellX && y === cellY){
+          fill("red");
+          wrongNumber = false;
+        }
+        else{
+          fill("black");
+        }
+        // fill("black");
         textSize(30);
         textFont("DIDOT");
         textAlign(CENTER, CENTER);
@@ -134,8 +144,9 @@ function mousePressed(){
     addNum = false;
     x = Math.floor((mouseX - sidePadding)/cellWidth);
     y = Math.floor((mouseY - topPadding)/cellHeight);
-  
-    if (int(playerGrid[y][x]) !== 0){ //if there is a number there, highlight all occurances
+
+    //if there is a number there, highlight all occurances
+    if (int(playerGrid[y][x]) !== 0){ 
       highlightNum = true; 
   
       if (original[y][x] !== 0){
@@ -146,7 +157,8 @@ function mousePressed(){
       }
     }
   
-    if (original[y][x] === 0) { //is the square you selected able to be changed?
+    //check if square selected is able to be changed
+    if (original[y][x] === 0) { 
       addNum = true;
       cellX = x;
       cellY = y;
@@ -154,8 +166,9 @@ function mousePressed(){
   }
 
   else if (gamePlay === false && mouseX < windowWidth/2 - 175/2 || mouseX > windowWidth/2 + 175/2 || mouseY < windowHeight/2 + 75 || mouseY > windowHeight/2 + 125){
-    let theBall = new Ball(mouseX, mouseY, random(10, 40));
-    ballArray.push(theBall);
+    let theNum = new Num(mouseX, mouseY);
+    numArray.push(theNum);
+    buttonSound.play();
   }
 }
 
@@ -169,13 +182,21 @@ function keyPressed(){
 
       if (int(playerGrid[y][x]) !== answer[y][x]){ //checks to see if correct
         mistakes++;
-        // wrongNumber = true; 
+        wrongNumber = true; 
+        let wrongCoordinate = [y, x];
+        wrongNumberLocations.push(wrongCoordinate);
         error.play();
       }
     }
 
     if (keyCode === BACKSPACE){ 
       click.play();
+      if (wrongNumberLocations.includes([y,x])) {
+        console.log("yes");
+        index = wrongNumberLocations.findIndex([y,x]);
+        wrongNumberLocations.splice(wrongNumberLocations[index], 1);
+      }
+
       playerGrid[y][x] = 0;
       addNum = false;
     }
@@ -185,44 +206,48 @@ function keyPressed(){
 
 //separate from mousePressed() to ensure that the buttons don't interfere with the gameplay
 function mouseClicked(){
-  //clear button
-  if (mouseX > sidePadding && mouseX < sidePadding + 100 && 
-    mouseY > vertEdge + 10 && mouseY < vertEdge + 10 + 35) {
-    mistakes = 0;
-    for (let y = 0; y<rows; y++){
-      for (let x = 0; x<cols; x++){
-        playerGrid[y][x] = original[y][x];
+  if (gamePlay === true){
+    //clear button
+    if (mouseX > sidePadding && mouseX < sidePadding + 100 && 
+      mouseY > vertEdge + 10 && mouseY < vertEdge + 10 + 35) {
+      mistakes = 0;
+      isComplete = false;
+      for (let y = 0; y<rows; y++){
+        for (let x = 0; x<cols; x++){
+          playerGrid[y][x] = original[y][x];
+        }
       }
+      buttonSound.play();
     }
-    buttonSound.play();
+  
+    //home button
+    if (mouseX > sidePadding + gridSize - 100 && mouseX < sidePadding + gridSize && 
+      mouseY > vertEdge + 10 && mouseY < vertEdge + 45) { 
+      for (let y = 0; y<rows; y++){
+        for (let x = 0; x<cols; x++){
+          playerGrid[y][x] = original[y][x];
+        }
+      }
+      gamePlay = false;
+      isComplete = false;
+      mistakes = 0;
+      buttonSound.play();
+    }
+
+    //reveal answer button
+    if (mouseX > windowWidth/2 - 175/2 && mouseX < windowWidth/2 - 175/2 + 175 && mouseY > vertEdge + 10 && mouseY < vertEdge + 45){
+      revealAnswer();
+    }
   }
 
-  //home button
-  if (mouseX > sidePadding + gridSize - 100 && mouseX < sidePadding + gridSize && 
-    mouseY > vertEdge + 10 && mouseY < vertEdge + 45) { 
-    for (let y = 0; y<rows; y++){
-      for (let x = 0; x<cols; x++){
-        playerGrid[y][x] = original[y][x];
-      }
-    }
-    gamePlay = false;
-    mistakes = 0;
-    buttonSound.play();
-  }
-
-  //play button
-  if (gamePlay === false){
+  else {
+    //play button
     if (mouseX > windowWidth/2 - 175/2 && mouseX < windowWidth/2 + 175/2 &&
       mouseY > windowHeight/2 + 75 && mouseY < windowHeight/2 + 125){
       gamePlay = true;
+      numArray = [];
       buttonSound.play();
     }
-  }
-
-  //reveal answer button
-  if (mouseX > windowWidth/2 - 175/2 && mouseX < windowWidth/2 - 175/2 + 175 &&
-    mouseY > vertEdge + 10 && mouseY < vertEdge + 45){
-    revealAnswer();
   }
 }
 
@@ -275,7 +300,6 @@ function textLengthCheck(theText){
     }
     textStr = textStr.concat(theText[i]);
   }
-  // console.log(textStr);
   return textStr;
 
 }
@@ -313,9 +337,6 @@ function revealAnswer(){
       playerGrid[y][x] = answer[y][x];
     }
   }
-  if (checkCompletion()){ // need to alter so that it will play when the user wins too
-    complete.play();
-  }
 }
 
 function displayTitle(){
@@ -325,6 +346,10 @@ function displayTitle(){
   textFont("DIDOT");
   fill("black");
   text(title, windowWidth/2, windowHeight/2 - 100);
+
+  let boringScreen = "(this home screen looks a little boring to me...)";
+  textSize(20);
+  text(boringScreen, windowWidth/2, windowHeight/2);
 }
 
 function displayPlayButton(){
@@ -340,7 +365,7 @@ function displayPlayButton(){
 function checkCompletion(){
   for (let y = 0; y<rows; y++){
     for (let x = 0; x<cols; x++){
-      if (playerGrid[y][x] !== answer[y][x]){
+      if (int(playerGrid[y][x]) !== answer[y][x]){
         return false;
       }
     }
@@ -348,19 +373,19 @@ function checkCompletion(){
   return true;
 }
 
-class Ball {
-  constructor(x, y, radius) {
+class Num {
+  constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.radius = radius;
-    this.dx = random(-5, 5);
-    this.dy = random(-5, 5);
-    this.someColor = color(random(255), random(255), random(255), random(255));
+    this.dx = random(-3, 3);
+    this.dy = random(-3, 3);
+    this.chosenNum = Math.round(random(1, 9));
+    this.fontSize = random(30, 45);
   }
 
   display() {
-    fill(this.someColor);
-    ellipse(this.x, this.y, this.radius*2, this.radius*2);
+    textSize(this.fontSize);
+    text(this.chosenNum, this.x, this.y);
   }
 
   move() {
@@ -368,10 +393,10 @@ class Ball {
     this.y += this.dy;
 
     //bounce on walls
-    if (this.x - this.radius < 0 || this.x + this.radius > width) {
+    if (this.x - this.fontSize < 0 || this.x + this.fontSize > width) {
       this.dx *= -1;
     }
-    if (this.y - this.radius < 0 || this.y + this.radius > height) {
+    if (this.y - this.fontSize < 0 || this.y + this.fontSize > height) {
       this.dy *= -1;
     }
   }

@@ -4,7 +4,7 @@
 //
 // Extra for Experts:
 // - Selecting a number would highlight all occurances of that number
-// - The rules never cut off in the middle of a word
+// - The lines of text in the rules wil start a new line if the next word does not fit
 
 //Things to Do:
 //Make wrong number red
@@ -25,6 +25,8 @@ let sideEdge, vertEdge, bottomEdge;
 let cellX, cellY;
 let gamePlay = false;
 let backgroundMusic;
+let numArray = [];
+let isComplete = false;
 // let wrongNumber = false;
 
 function preload(){
@@ -32,7 +34,7 @@ function preload(){
   complete = loadSound("assets/complete.mp3"); //doesn't do anything yet
   error = loadSound("assets/error.wav");
   buttonSound = loadSound("assets/button.flac");
-  backgroundMusic = loadSound("assets/music.ogg"); 
+  // backgroundMusic = loadSound("assets/music.ogg"); 
   original = loadJSON("assets/sudoku1-original.json");
   answer = loadJSON("assets/sudoku1-answer.json"); 
   playerGrid = loadJSON("assets/sudoku1-player.json");
@@ -40,7 +42,7 @@ function preload(){
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  backgroundMusic.loop();
+  // backgroundMusic.loop();
 
   //center the grid
   gridSize = windowWidth*0.38;
@@ -66,13 +68,26 @@ function draw() {
     displayClearButton();
     displayHomeButton();
     displayRevealButton();
+
+    //check if complete and play sound once
+    if (checkCompletion() && isComplete === false){ 
+      complete.play();
+      isComplete = true;
+    }
   }
 
   else {
     displayTitle();
     displayPlayButton();
+    numberBounce();
   }
- 
+}
+
+function numberBounce(){
+  for (let i=0; i<numArray.length; i++) {     
+    numArray[i].move();
+    numArray[i].display();
+  }
 }
 
 function drawGrid(){
@@ -144,6 +159,12 @@ function mousePressed(){
       cellY = y;
     }
   }
+
+  else if (gamePlay === false && mouseX < windowWidth/2 - 175/2 || mouseX > windowWidth/2 + 175/2 || mouseY < windowHeight/2 + 75 || mouseY > windowHeight/2 + 125){
+    let theNum = new Num(mouseX, mouseY);
+    numArray.push(theNum);
+    buttonSound.play();
+  }
 }
 
 function keyPressed(){
@@ -172,44 +193,48 @@ function keyPressed(){
 
 //separate from mousePressed() to ensure that the buttons don't interfere with the gameplay
 function mouseClicked(){
-  //clear button
-  if (mouseX > sidePadding && mouseX < sidePadding + 100 && 
-    mouseY > vertEdge + 10 && mouseY < vertEdge + 10 + 35) {
-    mistakes = 0;
-    for (let y = 0; y<rows; y++){
-      for (let x = 0; x<cols; x++){
-        playerGrid[y][x] = original[y][x];
+  if (gamePlay === true){
+    //clear button
+    if (mouseX > sidePadding && mouseX < sidePadding + 100 && 
+      mouseY > vertEdge + 10 && mouseY < vertEdge + 10 + 35) {
+      mistakes = 0;
+      isComplete = false;
+      for (let y = 0; y<rows; y++){
+        for (let x = 0; x<cols; x++){
+          playerGrid[y][x] = original[y][x];
+        }
       }
+      buttonSound.play();
     }
-    buttonSound.play();
+  
+    //home button
+    if (mouseX > sidePadding + gridSize - 100 && mouseX < sidePadding + gridSize && 
+      mouseY > vertEdge + 10 && mouseY < vertEdge + 45) { 
+      for (let y = 0; y<rows; y++){
+        for (let x = 0; x<cols; x++){
+          playerGrid[y][x] = original[y][x];
+        }
+      }
+      gamePlay = false;
+      isComplete = false;
+      mistakes = 0;
+      buttonSound.play();
+    }
+
+    //reveal answer button
+    if (mouseX > windowWidth/2 - 175/2 && mouseX < windowWidth/2 - 175/2 + 175 && mouseY > vertEdge + 10 && mouseY < vertEdge + 45){
+      revealAnswer();
+    }
   }
 
-  //home button
-  if (mouseX > sidePadding + gridSize - 100 && mouseX < sidePadding + gridSize && 
-    mouseY > vertEdge + 10 && mouseY < vertEdge + 45) { 
-    for (let y = 0; y<rows; y++){
-      for (let x = 0; x<cols; x++){
-        playerGrid[y][x] = original[y][x];
-      }
-    }
-    gamePlay = false;
-    mistakes = 0;
-    buttonSound.play();
-  }
-
-  //play button
-  if (gamePlay === false){
+  else {
+    //play button
     if (mouseX > windowWidth/2 - 175/2 && mouseX < windowWidth/2 + 175/2 &&
       mouseY > windowHeight/2 + 75 && mouseY < windowHeight/2 + 125){
       gamePlay = true;
+      numArray = [];
       buttonSound.play();
     }
-  }
-
-  //reveal answer button
-  if (mouseX > windowWidth/2 - 175/2 && mouseX < windowWidth/2 - 175/2 + 175 &&
-    mouseY > vertEdge + 10 && mouseY < vertEdge + 45){
-    revealAnswer();
   }
 }
 
@@ -262,7 +287,6 @@ function textLengthCheck(theText){
     }
     textStr = textStr.concat(theText[i]);
   }
-  // console.log(textStr);
   return textStr;
 
 }
@@ -300,9 +324,6 @@ function revealAnswer(){
       playerGrid[y][x] = answer[y][x];
     }
   }
-  if (checkCompletion()){ // need to alter so that it will play when the user wins too
-    complete.play();
-  }
 }
 
 function displayTitle(){
@@ -310,7 +331,12 @@ function displayTitle(){
   textAlign(CENTER, CENTER);
   textSize(75);
   textFont("DIDOT");
+  fill("black");
   text(title, windowWidth/2, windowHeight/2 - 100);
+
+  let boringScreen = "(this home screen looks a little boring to me...)";
+  textSize(20);
+  text(boringScreen, windowWidth/2, windowHeight/2);
 }
 
 function displayPlayButton(){
@@ -326,7 +352,7 @@ function displayPlayButton(){
 function checkCompletion(){
   for (let y = 0; y<rows; y++){
     for (let x = 0; x<cols; x++){
-      if (playerGrid[y][x] !== answer[y][x]){
+      if (int(playerGrid[y][x]) !== answer[y][x]){
         return false;
       }
     }
@@ -334,4 +360,31 @@ function checkCompletion(){
   return true;
 }
 
+class Num {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.dx = random(-3, 3);
+    this.dy = random(-3, 3);
+    this.chosenNum = Math.round(random(1, 9));
+    this.fontSize = random(30, 45);
+  }
 
+  display() {
+    textSize(this.fontSize);
+    text(this.chosenNum, this.x, this.y);
+  }
+
+  move() {
+    this.x += this.dx;
+    this.y += this.dy;
+
+    //bounce on walls
+    if (this.x - this.fontSize < 0 || this.x + this.fontSize > width) {
+      this.dx *= -1;
+    }
+    if (this.y - this.fontSize < 0 || this.y + this.fontSize > height) {
+      this.dy *= -1;
+    }
+  }
+}
