@@ -5,6 +5,7 @@
 // Extra for Experts:
 // - Selecting a number would highlight all occurances of that number
 // - The lines of text in the rules wil start a new line if the next word does not fit
+// - The spacing between each line of text remains consistent regardless of window size
 
 let rows, cols, cellWidth, cellHeight;
 let addNum = false;
@@ -239,7 +240,7 @@ function displayMistakes(){
   textSize(30);
   textFont("DIDOT");
   textAlign(RIGHT, CENTER);
-  text(mistakesText, sideEdge, 45);
+  text(mistakesText, sideEdge, topPadding - 20);
 }
 
 function displayRules(){
