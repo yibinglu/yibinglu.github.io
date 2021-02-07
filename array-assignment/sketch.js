@@ -5,6 +5,12 @@
 // Extra for Experts:
 // - Selecting a number would highlight all occurances of that number
 // - The lines of text in the rules wil start a new line if the next word does not fit
+// - The spacing between each line of text remains consistent regardless of window size
+//
+// Plans for Final Project:
+// - Solves sudoku (recursion)
+// - Button size and placement is consistent with screen size (right now all the values are "magic numbers")
+// - More than one difficulty
 
 let rows, cols, cellWidth, cellHeight;
 let addNum = false;
@@ -42,11 +48,11 @@ function setup() {
   sidePadding = (windowWidth - gridSize)/2;
   topPadding = (windowHeight - gridSize)/2;
 
-  //These variables make the rest of the code shorter because they are commonly used
+  //These commonly used variables make the rest of the code more concise
   sideEdge = sidePadding + gridSize;
   vertEdge = topPadding + gridSize;
 
-  rows = 9;
+  rows = 9; 
   cols = 9;
   cellWidth = gridSize/cols;
   cellHeight = gridSize/rows;
@@ -54,6 +60,8 @@ function setup() {
 
 function draw() {
   background(195, 217, 197);
+
+  //game screen
   if (gamePlay === true){
     drawGrid();
     displayMistakes();
@@ -69,6 +77,7 @@ function draw() {
     }
   }
 
+  //home screen
   else {
     displayTitle();
     displayPlayButton();
@@ -83,8 +92,7 @@ function drawGrid(){
       fill(242, 239, 216);
 
       //highlights square
-      if (addNum && x === cellX && y === cellY ||
-         highlightNum && int(playerGrid[y][x]) === selectNum){
+      if (addNum && x === cellX && y === cellY || highlightNum && int(playerGrid[y][x]) === selectNum){
         fill(219, 218, 191);
       }
       rect(x*cellWidth + sidePadding, y*cellHeight + topPadding, cellWidth, cellHeight);
@@ -97,6 +105,8 @@ function drawGrid(){
         else{
           fill("black");
         }
+
+        //places number in box
         textSize(30);
         textFont("DIDOT");
         textAlign(CENTER, CENTER);
@@ -125,7 +135,6 @@ function drawGridOutline(){
 
 function mousePressed(){
   if (gamePlay === true){
-    //click within grid
     highlightNum = false;
     addNum = false;
     x = Math.floor((mouseX - sidePadding)/cellWidth);
@@ -180,6 +189,8 @@ function keyPressed(){
       playerGrid[y][x] = 0;
       addNum = false;
     }
+
+    //after you click off a square, it un-highlights those numbers
     highlightNum = false; 
   }
 }
@@ -237,7 +248,7 @@ function displayMistakes(){
   textSize(30);
   textFont("DIDOT");
   textAlign(RIGHT, CENTER);
-  text(mistakesText, sideEdge, 45);
+  text(mistakesText, sideEdge, topPadding - 20);
 }
 
 function displayRules(){
@@ -248,35 +259,40 @@ function displayRules(){
   textAlign(LEFT);
   text(rulesTitle, 20, 30);
 
+  let letterSize = 20;
+  let spaceInBetween = 30;
+  let textBox = sidePadding - sidePadding*0.2;
+  let startLine1 = 70, startLine2, startLine3, startLine4;
+
   let point1 = ["- Fill ", "in ", "the ", "numbers ", "1 ", "to ", "9 ", "exactly ", "once ", "in ", "every ", "row, ", "column, ", "and ", "3x3 ", "square ", "outlined ", "in ", "the ", "grid."];
-  textSize(20);
+  textSize(letterSize);
   let point1Spaced = textLengthCheck(point1);
-  text(point1Spaced, 20, 70, sidePadding - sidePadding*0.2);
+  text(point1Spaced, 20, startLine1, textBox);
   let point1Lines = point1Spaced.match(/\n/g).length +1;
-  console.log(point1Lines);
+  let point1Height = point1Lines * letterSize + 70;
+  startLine2 = point1Height + spaceInBetween;
 
   let point2 = ["- Click ", "on ", "an ", "empty ", "sqaure ", "and ", "use ", "your ", "keyboard ", "to ", "fill ", "in ", "the ", "number. "];
-  textSize(20);
   let point2Spaced = textLengthCheck(point2);
-  text(point2Spaced, 20, 140, sidePadding - sidePadding*0.2);
+  text(point2Spaced, 20, startLine2, textBox);
   let point2Lines = point2Spaced.match(/\n/g).length +1;
-  console.log(point2Lines);
+  let point2Height = point2Lines * letterSize;
+  startLine3 = startLine2 + point2Height + spaceInBetween;
+
 
   let point3 = ["- Click ", "on ", "a ", "number ", "to ", "highlight ", "all ", "occurances ", "of ", "that ", "number ", "in ", "the ", "grid. "];
-  textSize(20);
   let point3Spaced = textLengthCheck(point3);
-  text(point3Spaced, 20, 210, sidePadding - sidePadding*0.2);
+  text(point3Spaced, 20, startLine3, textBox);
   let point3Lines = point3Spaced.match(/\n/g).length +1;
-  console.log(point3Lines);
+  let point3Height = point3Lines * letterSize;
+  startLine4 = startLine3 + point3Height + spaceInBetween;
 
   let point4 = ["- Click ", "on ", "an ", "number ", "you ", "wish ", "to ", "erase ", "and ", "hit ", "BACKSPACE. "];
-  textSize(20);
   let point4Spaced = textLengthCheck(point4);
-  text(point4Spaced, 20, 280, sidePadding - sidePadding*0.2);
-  let point4Lines = point4Spaced.match(/\n/g).length +1;
-  console.log(point4Lines);
+  text(point4Spaced, 20, startLine4, textBox);
 }
 
+//Puts in 'enter' where necessary
 function textLengthCheck(theText){
   let textStr = "";
   let totalLength = 0;
@@ -337,7 +353,7 @@ function displayTitle(){
   fill("black");
   text(title, windowWidth/2, windowHeight/2 - 100);
 
-  let boringScreen = "(this home screen looks a little boring to me...)";
+  let boringScreen = "(this home screen is looking a little plain...)";
   textSize(20);
   text(boringScreen, windowWidth/2, windowHeight/2);
 }
@@ -379,10 +395,12 @@ class Num {
     this.dy = random(-4, 4);
     this.chosenNum = Math.round(random(1, 9));
     this.fontSize = random(35, 60);
+    this.width = textWidth(this.chosenNum);
   }
 
   display() {
     textSize(this.fontSize);
+    textAlign(LEFT, TOP);
     text(this.chosenNum, this.x, this.y);
   }
 
@@ -391,10 +409,13 @@ class Num {
     this.y += this.dy;
 
     //bounce on walls
-    if (this.x - this.fontSize < 0 || this.x + this.fontSize > width) {
+    if (this.x < 0 || this.x + this.width > windowWidth) {
       this.dx *= -1;
     }
-    if (this.y - this.fontSize < 0 || this.y + this.fontSize > height) {
+
+    //without "-10" after this.fontSize, it will bounce before it hits the bottom edge
+    //I will try to work out the logistics of this issue for my final project
+    if (this.y < 0 || this.y + this.fontSize - 10 > windowHeight) { 
       this.dy *= -1;
     }
   }
