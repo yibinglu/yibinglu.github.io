@@ -5,11 +5,13 @@
 // Extra for Experts:
 // - Selecting a number would highlight all occurances of that number
 // - The lines of text in the rules wil start a new line if the next word does not fit
-// - The spacing between each line of text remains consistent regardless of window size
+// - The rules will not overlap with each other even if the screen is narrow
+//
+// Background music is made by syncopika
 //
 // Plans for Final Project:
 // - Solves sudoku (recursion)
-// - Button size and placement is consistent with screen size (right now all the values are "magic numbers")
+// - Button size and placement remains consistent with screen size (right now all the values are "magic numbers")
 // - More than one difficulty
 
 let rows, cols, cellWidth, cellHeight;
@@ -184,6 +186,7 @@ function keyPressed(){
       }
     }
 
+    //deletes number
     if (keyCode === BACKSPACE){ 
       click.play();
       playerGrid[y][x] = 0;
@@ -242,6 +245,17 @@ function mouseClicked(){
   }
 }
 
+function checkCompletion(){
+  for (let y = 0; y<rows; y++){
+    for (let x = 0; x<cols; x++){
+      if (int(playerGrid[y][x]) !== answer[y][x]){
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 function displayMistakes(){
   let mistakesText = "Mistakes: " + mistakes;
   fill("black");
@@ -252,17 +266,17 @@ function displayMistakes(){
 }
 
 function displayRules(){
+  let letterSize = 20;
+  let spaceInBetween = 30;
+  let textBox = sidePadding - sidePadding*0.2;
+  let startLine1 = 70, startLine2, startLine3, startLine4;
+
   let rulesTitle = "HOW TO PLAY:";
   fill("black");
   textSize(25);
   textFont("DIDOT");
   textAlign(LEFT);
   text(rulesTitle, 20, 30);
-
-  let letterSize = 20;
-  let spaceInBetween = 30;
-  let textBox = sidePadding - sidePadding*0.2;
-  let startLine1 = 70, startLine2, startLine3, startLine4;
 
   let point1 = ["- Fill ", "in ", "the ", "numbers ", "1 ", "to ", "9 ", "exactly ", "once ", "in ", "every ", "row, ", "column, ", "and ", "3x3 ", "square ", "outlined ", "in ", "the ", "grid."];
   textSize(letterSize);
@@ -367,17 +381,6 @@ function displayPlayButton(){
   textSize(35);
   textAlign(CENTER, CENTER);
   text(playText, windowWidth/2, windowHeight/2 + 100);
-}
-
-function checkCompletion(){
-  for (let y = 0; y<rows; y++){
-    for (let x = 0; x<cols; x++){
-      if (int(playerGrid[y][x]) !== answer[y][x]){
-        return false;
-      }
-    }
-  }
-  return true;
 }
 
 function numberBounce(){
